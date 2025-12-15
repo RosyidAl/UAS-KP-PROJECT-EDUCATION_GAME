@@ -78,6 +78,7 @@ void typewriterPrint(string text, int delayMs = 30) {
     cout << "\n";
 }
 
+// FUNGSI CENTER YANG PRESISI
 void printCentered(string text) {
     int consoleWidth = 80; 
     int actualLength = 0;
@@ -95,10 +96,9 @@ void printCentered(string text) {
 void typewriterCenteredMultiline(string text, int delayMs = 40) {
     stringstream ss(text);
     string line;
-    int consoleWidth = 80;
     while(getline(ss, line)) {
         int len = line.length();
-        int padding = (consoleWidth - len) / 2;
+        int padding = (80 - len) / 2;
         if (padding > 0) cout << string(padding, ' ');
         for (char c : line) {
             cout << c; cout.flush(); sleepMs(delayMs);
@@ -108,23 +108,47 @@ void typewriterCenteredMultiline(string text, int delayMs = 40) {
 }
 
 // ==========================================
-// 3. FITUR NARASI & DIALOG (REVISI CAPSLOCK & POLOS)
+// 3. TITLE SCREEN
+// ==========================================
+void drawTitle() {
+    clearScreen();
+    cout << "\n\n";
+    cout << RED << BOLD << BLINK;
+    
+    printCentered("##############################################################################");
+    printCentered("#                                                                            #");
+    printCentered("       #######    ######      #     #     #    #####       ");
+    printCentered("            #     #     #    # #     #   #    #     #      ");
+    printCentered("           #      #     #   #   #     # #     #            ");
+    printCentered("          #       #     #  #     #     #       #####       ");
+    printCentered("         #        #     #  #######     #            #      ");
+    printCentered("        #         #     #  #     #     #      #     #      ");
+    printCentered("        #         ######   #     #     #       #####       ");
+    printCentered("#                                                                            #");
+    printCentered("#                       BEFORE THE FINAL TEST                                #");
+    printCentered("#                                                                            #");
+    printCentered("##############################################################################");
+    
+    cout << RESET << "\n";
+}
+
+// ==========================================
+// 4. FITUR NARASI & DIALOG (PERBAIKAN TOTAL)
 // ==========================================
 
-// PROLOGUE SCENE (HITAM PUTIH, CAPSLOCK EMOSI)
 void showPrologue() {
     clearScreen();
     sleepMs(1000);
     cout << "\n\n\n";
     
-    // Tetap merah biar dramatis sedikit untuk judul countdown
-    printCentered(RED + "7 HARI LAGI..." + RESET);
+    // REVISI: HITAM PUTIH (TANPA WARNA MERAH)
+    printCentered("7 HARI LAGI..."); 
     sleepMs(2000);
     
     clearScreen();
     cout << "\n\n"; 
     
-    // Teks Putih Biasa
+    // NARASI HITAM PUTIH
     typewriterPrint("  Hah... (Menghela napas panjang).", 60);
     typewriterPrint("  Kalender di dinding seolah mengejekku.", 60);
     sleepMs(1000);
@@ -134,7 +158,7 @@ void showPrologue() {
     typewriterPrint("  dan ekspektasi orang tua yang membebani bahu.", 40);
     sleepMs(1500);
     
-    // CAPSLOCK UNTUK KEKESALAN (PUTIH POLOS)
+    // CAPSLOCK HITAM PUTIH (TANPA KUNING)
     typewriterPrint("\n  BENAR-BENAR MEMUAKKAN SEKALI...", 70);
     sleepMs(1000);
     
@@ -142,23 +166,33 @@ void showPrologue() {
     typewriterPrint("  Aku harus lulus. Atau setidaknya...", 40);
     sleepMs(1000);
     
-    // CAPSLOCK LAGI
+    // CAPSLOCK HITAM PUTIH (TANPA MERAH)
     typewriterPrint("\n  ...TIDAK MATI KONYOL KARENA STRESS DI KOSAN INI.", 80);
-    sleepMs(2000);
+    sleepMs(1000);
     
-    cout << "\n\n";
-    printCentered("[ MEMULAI HARI PERTAMA ]");
-    sleepMs(2000);
+    // --- REVISI: LOADING CENTER TEPAT DI BAWAH TEXT ---
+    // Tidak ada clearScreen di sini, agar teks di atas tetap terlihat
+    cout << "\n\n\n"; 
+    
+    string loadingText = "[ MEMULAI HARI PERTAMA ]";
+    // Hitung center manual
+    int padding = (80 - loadingText.length()) / 2;
+    if (padding > 0) cout << string(padding, ' ');
+    
+    // Efek ketik untuk loadingnya
+    for(char c : loadingText) {
+        cout << c; cout.flush(); sleepMs(100);
+    }
+    cout << "\n";
+    sleepMs(2500);
 }
 
-// INNER MONOLOGUE SYSTEM (CAPSLOCK EMOSI)
 void showCharacterDialogue(const PlayerStats& p, int eventID) {
     cout << "\n";
     cout << CYAN << BOLD << "  [" << p.playerName << " bergumam]:" << RESET << "\n";
     
     string dialogue = "";
 
-    // 1. REAKSI TERHADAP EVENT
     if (eventID != -1) {
         switch(eventID) {
             case 0: dialogue = "  \"Tumben dosen muji. Apa dia salah orang? Ah, bodo amat, ambil aja positifnya.\""; break;
@@ -168,7 +202,6 @@ void showCharacterDialogue(const PlayerStats& p, int eventID) {
             case 4: dialogue = "  \"Materi rahasia! Hahaha, dewi fortuna sedang tersenyum padaku.\""; break;
         }
     } 
-    // 2. KONDISI KRITIS
     else if (p.health < 30) {
         dialogue = "  \"KEPALAKU MAU PECAH... badanku panas dingin. Apa aku skip aja hari ini?\"";
     }
@@ -178,7 +211,6 @@ void showCharacterDialogue(const PlayerStats& p, int eventID) {
     else if (p.fatigue > 80) {
         dialogue = "  \"Mata ini... berat banget. Kopi mana kopi...\"";
     }
-    // 3. KONDISI UMUM
     else if (p.day == 7) {
         dialogue = "  \"Oke. Hari terakhir. Habis-habisan atau pulang nama.\"";
     }
@@ -197,31 +229,20 @@ void showCharacterDialogue(const PlayerStats& p, int eventID) {
     cout << RESET;
 }
 
-// REAKSI AKSI (CAPSLOCK EMOSI)
 void showActionReaction(int choice, bool isSuccess) {
     cout << "\n" << CYAN << "  [Reaksi]: ";
     string txt = "";
     
     switch(choice) {
-        case 1: // Belajar
+        case 1: 
             if (isSuccess) txt = "\"Yes! Masuk akal! Ternyata nggak sesulit itu kalau fokus.\"";
             else txt = "\"ARGH! APAAN SIH INI?! HURUF-HURUFNYA KAYAK NARI-NARI DI DEPANKU!\"";
             break;
-        case 2: // Hiburan
-            txt = "\"Hah... lega rasanya. Lupakan kuliah sejenak.\"";
-            break;
-        case 3: // Olahraga
-            txt = "\"Huh.. hah.. Keringat ini setidaknya nyata, nggak kayak janji dosen.\"";
-            break;
-        case 4: // Medsos
-            txt = "\"Scroll dikit... eh kok udah sejam? SIALAN ALGORITMA TIKTOK.\"";
-            break;
-        case 5: // Tidur
-            txt = "\"Akhirnya... Kasurku sayang, aku pulang kepadamu...\"";
-            break;
-        case 99: // Paksa Begadang
-            txt = "\"MATAKU PERIH... JANTUNGMU BERDEBAR... TAPI MATERI INI BELUM SELESAI!\"";
-            break;
+        case 2: txt = "\"Hah... lega rasanya. Lupakan kuliah sejenak.\""; break;
+        case 3: txt = "\"Huh.. hah.. Keringat ini setidaknya nyata, nggak kayak janji dosen.\""; break;
+        case 4: txt = "\"Scroll dikit... eh kok udah sejam? SIALAN ALGORITMA TIKTOK.\""; break;
+        case 5: txt = "\"Akhirnya... Kasurku sayang, aku pulang kepadamu...\""; break;
+        case 99: txt = "\"MATAKU PERIH... JANTUNGMU BERDEBAR... TAPI MATERI INI BELUM SELESAI!\""; break;
     }
     
     typewriterPrint(txt, 30);
@@ -229,29 +250,23 @@ void showActionReaction(int choice, bool isSuccess) {
     sleepMs(1000); 
 }
 
-// REAKSI ENDING (CAPSLOCK EMOSI)
 void showEndingReaction(string rank) {
     cout << "\n" << CYAN << "  [Kata Terakhir]: ";
     string txt = "";
     
-    if (rank == "F (DROP OUT)") {
-        txt = "\"IBU... MAAFKAN AKU... SEMUANYA GELAP...\"";
-    } else if (rank == "S (Perfect)") {
-        txt = "\"Hahaha! Lihat siapa rajanya sekarang! IPK 4.0 bukan mimpi!\"";
-    } else if (rank == "A (Excellent)") {
-        txt = "\"Alhamdulillah... Usaha emang nggak mengkhianati hasil. Aku bisa tidur nyenyak malam ini.\"";
-    } else if (rank == "B (Standard)") {
-        txt = "\"Hufft... Nyaris. Yang penting lulus lah ya. Waktunya main game sepuasnya.\"";
-    } else { // D/E
-        txt = "\"SIALAN... KENAPA SOALNYA BEDA SAMA KISI-KISI?! DOSEN PENIPU!\"";
-    }
+    if (rank == "F (DROP OUT)") txt = "\"IBU... MAAFKAN AKU... SEMUANYA GELAP...\"";
+    else if (rank == "S (Perfect)") txt = "\"Hahaha! Lihat siapa rajanya sekarang! IPK 4.0 bukan mimpi!\"";
+    else if (rank == "A (Excellent)") txt = "\"Alhamdulillah... Usaha emang nggak mengkhianati hasil. Aku bisa tidur nyenyak malam ini.\"";
+    else if (rank == "B (Standard)") txt = "\"Hufft... Nyaris. Yang penting lulus lah ya. Waktunya main game sepuasnya.\"";
+    else txt = "\"SIALAN... KENAPA SOALNYA BEDA SAMA KISI-KISI?! DOSEN PENIPU!\"";
+    
     typewriterPrint(txt, 50);
     cout << RESET << "\n";
     sleepMs(2000);
 }
 
 // ==========================================
-// 4. SISTEM & HELPER
+// 5. SISTEM & HELPER
 // ==========================================
 
 vector<Question> loadQuestions() {
@@ -338,7 +353,7 @@ int getIntInRange(int min, int max) {
 }
 
 // ==========================================
-// 5. ANIMASI LOADING
+// 6. ANIMASI LOADING
 // ==========================================
 
 void printCenteredLoadingBar() {
@@ -387,7 +402,7 @@ void showLoadingReturnMenu() {
 }
 
 // ==========================================
-// 6. GAMEPLAY LOGIC
+// 7. GAMEPLAY LOGIC
 // ==========================================
 
 string drawBar(int current, int max, bool isBadStat) {
@@ -406,22 +421,6 @@ string getConditionText(const PlayerStats& p) {
 
 string getMoodText(int mood) {
     if (mood > 70) return "Semangat!"; if (mood > 40) return "Biasa Saja"; return "Malas..."; 
-}
-
-void drawTitle() {
-    clearScreen();
-    cout << "\n" << RED << BOLD << BLINK; 
-    cout << "#####################################################################\n";
-    cout << "#                                                                   #\n";
-    cout << "#    #######      ######      #####    #     #    #####             #\n";
-    cout << "#         #       #     #    #     #    #   #    #     #            #\n";
-    cout << "#        #        #     #    #######     # #     #######            #\n";
-    cout << "#       #         ######     #     #      #      #     #            #\n";
-    cout << "#                                                                   #\n";
-    cout << "#           BEFORE THE FINAL EXAMS (SURVIVAL SIMULATOR)             #\n";
-    cout << "#                                                                   #\n";
-    cout << "#####################################################################\n";
-    cout << RESET << "\n";
 }
 
 int showMainMenu() {
@@ -481,11 +480,10 @@ bool runMiniQuiz(const vector<Question>& questions) {
     printCentered(CYAN + BOLD + "LATIHAN SOAL HARIAN" + RESET);
     printCentered("======================================"); cout << "\n";
     
-    // REVISI: Teks Soal LANGSUNG MUNCUL (Tanpa typewriterPrint)
+    // REVISI: LANGSUNG MUNCUL
     cout << "  Soal: \n";
     cout << "  " << YELLOW << q.text << RESET << "\n\n";
     
-    // Pilihan jawaban langsung muncul
     cout << "  [A] " << q.a << "\n";
     cout << "  [B] " << q.b << "\n";
     cout << "  [C] " << q.c << "\n";
@@ -521,30 +519,8 @@ string applyChoice(PlayerStats& p, int choice, bool quizSuccess) {
     return log;
 }
 
-// OVERLOAD FUNGSI APPLY CHOICE UNTUK MENANGANI HASIL QUIZ
 string applyChoiceWithQuiz(PlayerStats& p, int choice, bool quizSuccess) {
-    string log = "";
-    bool kondisiBuruk = (p.health < 50 || p.stress > 70);
-
-    switch (choice) {
-        case 1: { // BELAJAR
-            int gain = 0;
-            if (quizSuccess) { gain = (p.understanding < 40) ? 15 : ((p.understanding < 70) ? 10 : 6); p.studyMood += 10; log = "Belajar Sukses! Jawaban Benar. "; } 
-            else { gain = 4; p.stress += 8; log = "Belajar Sulit. Jawaban Salah. "; }
-            int penalty = p.fatigue / 15; gain -= penalty; if (gain < 1) gain = 1;
-            if (kondisiBuruk) p.fatigue += 8; else p.fatigue += 3;
-            p.understanding += gain; p.stress += 5; p.happiness -= 5; p.health -= 5;
-            log += "(Pemahaman +" + numToStr(gain) + ")";
-            break;
-        }
-        default: 
-             if(choice == 2) { log = "Hiburan. (Stress -10, Bahagia +15)"; p.happiness += 15; p.stress -= 10; p.studyMood += 5; p.fatigue -= 3; }
-             else if(choice == 3) { log = "Olahraga. (Health +10, Fatigue -4)"; p.health += 10; p.stress -= 5; p.happiness += 5; p.fatigue -= 4; }
-             else if(choice == 4) { log = "Scroll medsos. (Mood -10, Bahagia +5)"; p.happiness += 5; p.stress += 5; p.studyMood -= 10; }
-             break;
-    }
-    clamp(p.happiness); clamp(p.studyMood); clamp(p.stress); clamp(p.understanding); clamp(p.health); clamp(p.fatigue, 0, 100);
-    return log;
+    return applyChoice(p, choice, quizSuccess);
 }
 
 string getMorningNarration(const PlayerStats& p) {
@@ -636,7 +612,6 @@ void showEnding(const PlayerStats& p) {
     cout << "\n"; printCentered("[ KESIMPULAN ]"); sleepMs(500);
     typewriterCenteredMultiline(message, 50); 
     
-    // REAKSI AKHIR
     showEndingReaction(rank);
 
     cout << "\n"; printCentered("======================================================");
@@ -644,7 +619,7 @@ void showEnding(const PlayerStats& p) {
 }
 
 // ==========================================
-// 7. MAIN CONTROLLER
+// 8. MAIN CONTROLLER
 // ==========================================
 int main() {
     srand((unsigned)time(nullptr));
