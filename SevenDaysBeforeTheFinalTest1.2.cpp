@@ -5,6 +5,17 @@
 #include <string>
 #include <sstream>
 
+// ==========================================
+// TAMBAHAN 1: LIBRARY UNTUK DELAY WAKTU
+// ==========================================
+#ifdef _WIN32
+#include <windows.h>
+void sleepMs(int ms) { Sleep(ms); } // Windows (milidetik)
+#else
+#include <unistd.h>
+void sleepMs(int ms) { usleep(ms * 1000); } // Linux/Mac (mikrodetik)
+#endif
+
 using namespace std;
 
 // ==========================================
@@ -14,10 +25,6 @@ const string RESET  = "\033[0m";
 const string RED    = "\033[31m";
 const string GREEN  = "\033[32m";
 const string YELLOW = "\033[33m";
-const string CYAN   = "\033[36m";
-const string GREY   = "\033[90m"; 
-const string BOLD   = "\033[1m";
-// --- TAMBAHAN BARU: KODE KEDIP ---
 const string BLINK  = "\033[5m"; 
 
 struct PlayerStats {
@@ -62,11 +69,11 @@ int getIntInRange(int min, int max) {
         if (cin >> value) {
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             if (value >= min && value <= max) return value;
-            cout << RED << "Input tidak valid. Coba lagi.\n" << RESET;
+            cout << RED << "Input tidak valid. Masukkan angka 1-" << max << ".\n" << RESET;
         } else {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << RED << "Masukkan angka.\n" << RESET;
+            cout << RED << "Harap masukkan angka.\n" << RESET;
         }
     }
 }
@@ -77,7 +84,24 @@ void clearScreen() { system("cls"); }
 void clearScreen() { system("clear"); }
 #endif
 
-// --- FUNGSI BAR (DENGAN EFEK KEDIP JIKA MERAH) ---
+// ==========================================
+// TAMBAHAN 2: FUNGSI ANIMASI LOADING
+// ==========================================
+void showLoadingDayChange() {
+    cout << "\n";
+    cout << "Mengakhiri hari, memulihkan energi...\n";
+    cout << "Loading: [";
+    
+    for (int i = 0; i < 20; i++) {
+        cout << "=";     
+        cout.flush();    
+        sleepMs(50);     
+    }
+    
+    cout << "] 100%\n";
+    sleepMs(500); 
+}
+
 string drawBar(int current, int max, bool isBadStat) {
     int width = 15; 
     float percent = (float)current / max;
@@ -85,66 +109,63 @@ string drawBar(int current, int max, bool isBadStat) {
     if (fill > width) fill = width;
     if (fill < 0) fill = 0;
 
-    string color;
+    string color = RESET; 
+    
     if (!isBadStat) {
-        // Stat Bagus (HP/Energy)
         if (percent >= 0.7) color = GREEN;
         else if (percent >= 0.4) color = YELLOW;
-        else color = RED + BLINK; // <--- TAMBAH BLINK DISINI (HP Rendah)
+        else color = RED + BLINK; 
     } else {
-        // Stat Buruk (Stress/Fatigue)
-        if (percent >= 0.7) color = RED + BLINK; // <--- TAMBAH BLINK DISINI (Stress Tinggi)
+        if (percent >= 0.7) color = RED + BLINK; 
         else if (percent >= 0.4) color = YELLOW;
         else color = GREEN;
     }
 
-    string bar = color; 
+    string bar = "[";
+    bar += color; 
     for (int i = 0; i < fill; i++) bar += "|"; 
-    bar += GREY;
+    bar += RESET; 
     for (int i = fill; i < width; i++) bar += "."; 
-    bar += RESET;
+    bar += "]";
 
     return bar;
 }
 
 string getConditionText(const PlayerStats& p) {
-    // Kita buat gaya khusus untuk kondisi kritis: Merah + Tebal + Kedip
-    string criticalStyle = RED + BOLD + BLINK;
-    
-    if (p.health < 20) return criticalStyle + "KRITIS" + RESET;
-    if (p.stress > 80) return criticalStyle + "STRESS BERAT" + RESET;
-    
-    if (p.fatigue > 80) return YELLOW + "SANGAT LELAH" + RESET;
-    return GREEN + "PRIMA" + RESET;
+    if (p.health < 20) return "KRITIS (BAHAYA)";
+    if (p.stress > 80) return "STRESS BERAT";
+    if (p.fatigue > 80) return "SANGAT LELAH";
+    return "PRIMA";
 }
 
 string getMoodText(int mood) {
-    if (mood > 70) return GREEN + "Semangat!   " + RESET;
-    if (mood > 40) return YELLOW + "Biasa Saja  " + RESET;
-    return RED + "Malas...    " + RESET; // Mood malas tidak perlu kedip, cukup merah
+    if (mood > 70) return "Semangat!";
+    if (mood > 40) return "Biasa Saja";
+    return "Malas..."; 
 }
 
 // ==========================================
-// 3. TAMPILAN UTAMA (DASHBOARD)
+// 3. TAMPILAN UTAMA (DASHBOARD CLEAN)
 // ==========================================
 
 void showStats(const PlayerStats& p, string log) {
     cout << "\n";
     cout << "========================================================================\n";
-    cout << "|  HARI " << p.day << " / 7  |  STATUS: " << getConditionText(p) << "\t\t       |  TARGET: UJIAN AKHIR     |\n";
+    cout << "|  HARI " << p.day << " / 7\t\t|  STATUS: " << getConditionText(p) << "\t|  TARGET: UJIAN AKHIR |\n";
     cout << "========================================================================\n";
-    cout << "|  " << CYAN << "VITALITAS" << RESET << "             |  " << CYAN << "MENTAL" << RESET << "                |  " << CYAN << "AKADEMIK" << RESET << "            |\n";
-    cout << "|                        |                        |                      |\n";
+    cout << "|  VITALITAS            |  MENTAL               |  AKADEMIK            |\n";
+    cout << "|                       |                       |                      |\n";  
+    cout << "|  HP : " << p.health << "%             |  STRESS : " << p.stress << "%         |  PEMAHAMAN: " << p.understanding << "%      |\n";
+    cout << "|  " << drawBar(p.health, 100, false)    <<"    |  " << drawBar(p.stress, 100, true) << "    |  " << drawBar(p.understanding, 100, false) << "   |\n";
+    cout << "|                       |                       |                      |\n";
 
-    // BARIS 1
-    cout << "|  HP  : " << p.health << "%            |  STRESS  : " << p.stress << "%           |  PEMAHAMAN: " << p.understanding << "%        |\n";
-    cout << "|  [" << drawBar(p.health, 100, false) << "]  |  [" << drawBar(p.stress, 100, true) << "]  |  [" << drawBar(p.understanding, 100, false) << "] |\n";
-    cout << "|                        |                        |                      |\n";
-
-    // BARIS 2
     string moodTxt = getMoodText(p.studyMood);
-    cout << "|  NRG : " << p.energy << "             |  FATIGUE : " << p.fatigue << "%           |  MOOD: " << moodTxt << "   |\n";
-    cout << "|  [" << drawBar(p.energy, p.maxEnergy, false) << "]  |  [" << drawBar(p.fatigue, 100, true) << "]  |  (Niat Belajar)      |\n";
+    string spaceAlign = "    ";
+    if (moodTxt == "Biasa Saja") spaceAlign = "   ";
+    if (moodTxt == "Malas...") spaceAlign = "     ";
+
+    cout << "|  ENERGI : " << p.energy << "         |  FATIGUE : " << p.fatigue << "%         |  MOOD: " << moodTxt << spaceAlign << " |\n";
+    cout << "|  " << drawBar(p.energy, p.maxEnergy, false) << "    |  " << drawBar(p.fatigue, 100, true) << "    |  (Niat Belajar)      |\n";
 
     cout << "========================================================================\n";
     cout << "|  LOG TERAKHIR:                                                       |\n";
@@ -200,29 +221,37 @@ string applyForgettingAtMorning(PlayerStats& p) {
 
 string triggerRandomEvent(PlayerStats& p) {
     int roll = rand() % 100;
-    if (roll >= 40) return ""; 
+    if (roll >= 50) return ""; 
 
     string log = "\n";
-    int type = rand() % 3;
+    int type = rand() % 5; 
+
     if (type == 0) {
-        log += "[EVENT] Kuis dadakan! ";
-        if (p.understanding >= 60) {
-            log += "Kamu bisa mengerjakannya. (Stress +5)";
-            p.stress += 5; p.happiness += 2;
-        } else {
-            log += "Kamu panik! (Stress +15)";
-            p.stress += 15; p.happiness -= 8;
-        }
-    } else if (type == 1) {
-        log += "[EVENT] Listrik padam. (Health -8, Energi -20)";
-        p.health -= 8; p.energy -= 20; p.stress += 5;
+        log += "[EVENT] Dosen memuji tugasmu! (Happy +20, Stress -15)";
+        p.happiness += 20; p.stress -= 15; p.studyMood += 10;
+    } 
+    else if (type == 1) {
+        log += "[EVENT] Sakit perut parah semalam! (Health -20, Energi -30)";
+        p.health -= 20; p.energy -= 30; p.stress += 10;
         if (p.energy < 0) p.energy = 0;
-    } else {
-        log += "[EVENT] Diajak teman nongkrong. (Happy +10, Paham -3)";
-        p.happiness += 10; p.stress -= 5; p.studyMood += 3; p.understanding -= 3;
+    } 
+    else if (type == 2) {
+        log += "[EVENT] Revisi dadakan dosen killer! (Stress +25, Mood -15)";
+        p.stress += 25; p.studyMood -= 15; p.happiness -= 10;
     }
+    else if (type == 3) {
+        log += "[EVENT] Tetangga hajatan berisik. (Fatigue +20, Energi -15)";
+        p.fatigue += 20; p.energy -= 15;
+        if (p.energy < 0) p.energy = 0;
+    }
+    else {
+        log += "[EVENT] Menemukan materi rahasia kating. (Paham +10, Happy +5)";
+        p.understanding += 10; p.happiness += 5;
+    }
+
     clamp(p.health); clamp(p.stress); clamp(p.happiness);
     clamp(p.studyMood); clamp(p.understanding);
+    
     return log;
 }
 
@@ -305,22 +334,21 @@ string applyBegadangPenalty(PlayerStats& p) {
     if (p.energy > p.maxEnergy) p.energy = p.maxEnergy;
     
     clamp(p.health); clamp(p.stress); clamp(p.happiness); clamp(p.fatigue, 0, 100);
-    // Di sini juga kita tambahkan BLINK agar peringatannya dramatis
-    return " " + RED + BLINK + "[!] BEGADANG. (Health -15, Max NRG Turun)" + RESET;
+    return " [!] BEGADANG. (Health -15, Max NRG Turun)";
 }
 
 void showEnding(const PlayerStats& p) {
     clearScreen();
-    cout << BOLD << "\n===== HARI UJIAN TIBA =====\n" << RESET;
+    cout << "\n===== HARI UJIAN TIBA =====\n";
     cout << "Statistik Akhir:\n";
     cout << "Pemahaman : " << p.understanding << "\n";
     cout << "Kesehatan : " << p.health << "\n";
     cout << "Stress    : " << p.stress << "\n\n";
 
-    if (p.health <= 0) cout << RED << BOLD << BLINK << "BAD ENDING: Kamu sakit parah saat ujian.\n" << RESET;
-    else if (p.understanding >= 80 && p.stress <= 50) cout << GREEN << BOLD << "BEST ENDING: Nilai A! Persiapan sempurna.\n" << RESET;
-    else if (p.understanding >= 60) cout << YELLOW << BOLD << "NORMAL ENDING: Nilai Cukup. Kamu lulus.\n" << RESET;
-    else cout << RED << BOLD << "BAD ENDING: Nilai Buruk. Persiapan kurang matang.\n" << RESET;
+    if (p.health <= 0) cout << "BAD ENDING: Kamu sakit parah saat ujian.\n";
+    else if (p.understanding >= 80 && p.stress <= 50) cout << "BEST ENDING: Nilai A! Persiapan sempurna.\n";
+    else if (p.understanding >= 60) cout << "NORMAL ENDING: Nilai Cukup. Kamu lulus.\n";
+    else cout << "BAD ENDING: Nilai Buruk. Persiapan kurang matang.\n";
 }
 
 // ==========================================
@@ -335,7 +363,6 @@ int main() {
         currentLog = ""; 
         if (p.day > 1) currentLog += applyForgettingAtMorning(p);
         
-        p.energy = p.maxEnergy;
         currentLog += getMorningNarration(p);
         currentLog += triggerRandomEvent(p);
 
@@ -349,10 +376,12 @@ int main() {
             int choice = getIntInRange(1, 5);
 
             if (choice == 5) {
+                showLoadingDayChange();
+
                 string sleepLog = applySleep(p, true);
                 clearScreen();
                 showStats(p, sleepLog);
-                cout << "\nTekan Enter untuk lanjut...";
+                cout << "\nTekan Enter untuk lanjut ke hari esok...";
                 cin.get(); 
                 endDay = true;
             } else {
@@ -362,13 +391,28 @@ int main() {
                     currentLog = applyChoice(p, choice); 
                     if (choice == 1) studiedToday = true;
                 } else {
-                    currentLog = "Energi tidak cukup! Pilih: 1.Tidur, 2.Begadang";
+                    // --- PERUBAHAN UTAMA DI SINI (PERINGATAN ENERGI) ---
                     clearScreen();
-                    showStats(p, currentLog);
+                    showStats(p, ""); // Tampilkan status tanpa log agar bersih
+
+                    cout << "\n\n";
+                    cout << "\t" << RED << BLINK << "############################################" << RESET << "\n";
+                    cout << "\t" << RED <<        "      !!! PERINGATAN: ENERGI HABIS !!!      " << RESET << "\n";
+                    cout << "\t" << RED << BLINK << "############################################" << RESET << "\n";
+                    
+                    cout << "\n";
+                    cout << "\t" << YELLOW << "  Tubuhmu gemetar. Kamu tidak kuat lagi..." << RESET << "\n";
+                    cout << "\t" << "  Apa yang akan kamu lakukan?\n\n";
+                    
+                    cout << "\t" << GREEN << "[1] Tidur & Pulihkan Diri" << RESET << " (Sangat Disarankan)\n";
+                    cout << "\t" << RED   << "[2] Paksa Begadang" << RESET << "        (Resiko Kesehatan Tinggi!)\n";
+                    cout << "\n";
                     
                     int sub = getIntInRange(1, 2);
                     if (sub == 1) {
-                        string sleepLog = applySleep(p, false);
+                        showLoadingDayChange();
+
+                        string sleepLog = applySleep(p, false); 
                         clearScreen();
                         showStats(p, sleepLog);
                         cout << "\nTekan Enter...";
@@ -376,16 +420,18 @@ int main() {
                         endDay = true;
                     } else {
                         p.energy -= cost; 
-                        if(p.energy < 0) p.energy = 0;
+                        if(p.energy < 0) p.energy = 0; 
+                        
                         string actionLog = applyChoice(p, choice);
                         string penaltyLog = applyBegadangPenalty(p);
+                        
                         currentLog = actionLog + penaltyLog; 
                         if (choice == 1) studiedToday = true;
                         endDay = true; 
                         
                         clearScreen();
                         showStats(p, currentLog);
-                        cout << "\nEfek begadang terasa... Tekan Enter...";
+                        cout << "\n" << RED << "Kamu ambruk tertidur setelah memaksakan diri..." << RESET << "\nTekan Enter...";
                         cin.get();
                     }
                 }
@@ -393,11 +439,13 @@ int main() {
 
             if (!endDay && (p.health <= 0 || p.stress >= 100)) {
                 p.collapseCount++;
-                p.health -= 5; p.understanding -= 8; p.maxEnergy -= 5; p.fatigue += 15;
+                p.health -= 5; p.understanding -= 8; p.maxEnergy -= 5; p.fatigue += 20;
                 if(p.health < 0) p.health = 0;
                 
-                // Pesan Ambruk juga dikasih kedip
-                currentLog = RED + BLINK + "!!! AMBRUK KARENA SAKIT/STRESS !!!" + RESET;
+                p.energy += 30; 
+                if (p.energy > p.maxEnergy) p.energy = p.maxEnergy;
+
+                currentLog = "!!! AMBRUK & PINGSAN !!! (Energi pulih sedikit: +30)";
                 endDay = true;
                 
                 clearScreen();
@@ -414,7 +462,8 @@ int main() {
         }
         if (!studiedToday) p.noStudyDays++;
         p.studiedYesterday = studiedToday;
-        p.day++;
+        
+        p.day++; 
     }
 
     showEnding(p);
