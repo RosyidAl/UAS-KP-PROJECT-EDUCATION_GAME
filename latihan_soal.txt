@@ -1,0 +1,94 @@
+Apa output dari cout << 8 / 3; ?
+2
+2.6
+3
+8
+A
+
+Apa output dari cout << 9 % 4; ?
+1
+2
+3
+4
+B
+
+Perhatikan kode berikut, apa outputnya?
+int x = 4;
+x = x * 2;
+cout << x;
+4
+6
+8
+2
+C
+
+Apa output dari kode berikut?
+int x = 5;
+cout << (x > 3);
+0
+1
+true
+false
+B
+
+Perhatikan potongan program berikut:
+int i = 1;
+while (i <= 3) {
+    cout << i;
+    i++;
+}
+1
+123
+012
+Error
+B
+
+Apa output dari kode berikut?
+for (int i = 0; i < 3; i++) {
+    cout << i;
+}
+012
+123
+01
+Error
+A
+
+Apa output dari potongan program berikut?
+int x = 0;
+if (x == 0)
+    cout << "A";
+else
+    cout << "B";
+A
+B
+AB
+Tidak ada output
+A
+
+Perhatikan kode berikut:
+int x = 3;
+cout << x++ << x;
+33
+34
+43
+Error
+B
+
+Apa output dari ekspresi berikut?
+cout << (5 > 3 && 2 > 4);
+1
+0
+true
+false
+B
+
+Apa output dari program berikut?
+int x = 1;
+do {
+    cout << x;
+} while (x == 0);
+1
+0
+Tidak ada output
+Error
+A
