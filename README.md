@@ -41,8 +41,14 @@
 - `save.txt` : Menyimpan data progres permainan pemain.  
 - `latihaan_soal.txt` (jika ada) : Menyimpan data soal kuis.  
 
+## Cara Instalasi
+1. Kunjungi repositori berikut:
+   https://github.com/RosyidAl/UAS-KP-PROJECT-EDUCATION_GAME
+2. Ikuti petunjuk di repositori untuk mengunduh dan menjalankan program.
+   
 ---
-##Kontributor 
+
+## Kontributor 
 - `Rosyid Al Ansori L0125065
 - `Rafi Alfarisy N. P. L0125061
 - `Daffabian Farel R. P. L0125134
