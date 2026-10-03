@@ -6,8 +6,6 @@
 #include <sstream>
 #include <fstream> 
 #include <vector> 
-#include <conio.h> 
-
 // ==========================================
 // LIBRARY UNTUK DELAY WAKTU
 // ==========================================
@@ -18,17 +16,6 @@ void sleepMs(int ms) { Sleep(ms); }
 #include <unistd.h>
 void sleepMs(int ms) { usleep(ms * 1000); } 
 #endif
-
-// ==========================================
-// KEY CODE CONSTANTS (Navigasi Menu)
-// ==========================================
-#define KEY_UP 72
-#define KEY_DOWN 80
-#define KEY_w 119
-#define KEY_W 87
-#define KEY_s 115
-#define KEY_S 83
-#define KEY_ENTER 13
 
 using namespace std;
 
@@ -91,6 +78,7 @@ void clearScreen() {
     cout.flush();
 #endif
 }
+
 
 void typewriterPrint(string text, int delayMs = 30) {
     for (char c : text) {
@@ -293,20 +281,25 @@ void showStats(const PlayerStats* p, string eventText, string actionLog) {
 }
 
 int showMainMenu() {
-    int selection = 1; int maxChoice = 3; bool selected = false; char key;
-    while(!selected) {
+    int selection = 0;
+    while(true) {
         drawTitle(); 
         cout << "\n\n"; 
-        if(selection == 1) printCentered(CYAN + BOLD + ">> [1] MULAI BARU <<" + RESET); else printCentered("   [1] MULAI BARU   ");
-        if(selection == 2) printCentered(CYAN + BOLD + ">> [2] MUAT GAME (LOAD SAVE) <<" + RESET); else printCentered("   [2] MUAT GAME (LOAD SAVE)   ");
-        if(selection == 3) printCentered(RED + BOLD + ">> [3] KELUAR APLIKASI (QUIT) <<" + RESET); else printCentered("   [3] KELUAR APLIKASI (QUIT)   ");
+        printCentered("   [1] MULAI BARU   ");
+        printCentered("   [2] MUAT GAME (LOAD SAVE)   ");
+        printCentered("   [3] KELUAR APLIKASI (QUIT)   ");
         cout << "\n\n\n"; 
-        printCentered(YELLOW + "Gunakan W/S atau PANAH untuk memilih, ENTER untuk oke" + RESET);
-        key = _getch(); 
-        if (key == -32 || key == 224) { key = _getch(); switch(key) { case KEY_UP: if(selection > 1) selection--; break; case KEY_DOWN: if(selection < maxChoice) selection++; break; } } 
-        else { switch(key) { case KEY_w: case KEY_W: if(selection > 1) selection--; break; case KEY_s: case KEY_S: if(selection < maxChoice) selection++; break; case KEY_ENTER: selected = true; break; } }
+        printCentered(YELLOW + "Masukkan pilihan (1/2/3) lalu tekan ENTER:" + RESET);
+        cout << "\n        >> ";
+        string input;
+        cin >> input;
+        if(input == "1") return 1;
+        if(input == "2") return 2;
+        if(input == "3") return 3;
+        cout << RED << "        Input tidak valid. Tekan ENTER untuk mencoba lagi..." << RESET;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.get();
     }
-    return selection;
 }
 
 // ==========================================
@@ -411,16 +404,16 @@ void showChoices() {
 
 vector<Question> loadQuestions() {
     vector<Question> questions;
-    ifstream file("latihan_soal.txt");
+    ifstream file("data/latihan_soal.txt");
     
     if (!file.is_open()) {
         // Buat file dummy jika tidak ada, agar tidak error
         cout << "File latihan_soal.txt tidak ditemukan, membuat file baru...\n";
-        ofstream outfile("latihan_soal.txt");
+        ofstream outfile("data/latihan_soal.txt");
         outfile << "Contoh Soal 1?\nA\nB\nC\nD\nA\n\n";
         outfile.close();
         // Buka ulang
-        file.open("latihan_soal.txt");
+        file.open("data/latihan_soal.txt");
     }
 
     vector<string> buffer;
@@ -486,7 +479,7 @@ vector<Question> loadQuestions() {
     return questions;
 }
 
-const string SAVE_FILE = "savegame.txt";
+const string SAVE_FILE = "data/savegame.txt";
 void saveGame(const PlayerStats* p) {
     if (!p) return; // null pointer check
     ofstream file(SAVE_FILE);
